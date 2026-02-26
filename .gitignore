@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+
+# Data
+MNIST/
+
+# Environments
+cvenv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Mac
+.DS_Store

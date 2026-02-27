@@ -22,7 +22,7 @@ NOTE: All __init__ methods are provided - focus on the forward/backward pass log
 # ============================================================================
 # DATA LOADING AND PREPROCESSING (PROVIDED)
 # ============================================================================
-DRIVE_DIR = "/Users/alex/Documents/2. NYU/CS_3033_Computer_Vision/Assignment_1"
+DRIVE_DIR = "'/scratch/ap9283/Assignment_1'"
 import os
 os.makedirs(DRIVE_DIR, exist_ok=True)
 import torch
@@ -32,6 +32,7 @@ from torchvision import datasets, transforms
 import matplotlib.pyplot as plt
 # Set device and random seed for reproducibility
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# DEVICE = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
 torch.manual_seed(42)
 print("Device:", DEVICE)
 
@@ -323,16 +324,16 @@ class Conv2D(Module):
         
         # Saving input shape
         self.shape = x.shape
-        print(f"input shape: {self.shape}")
+        # print(f"input shape: {self.shape}")
         # unfold for local patch extraction
         self.X_unf = F.unfold(x, kernel_size=(self.kH,self.kW), padding=self.padding, stride=self.stride)
-        print(f"unfolded local patch shape: {self.X_unf.shape}")
+        # print(f"unfolded local patch shape: {self.X_unf.shape}")
         #reshape into 2D matrix
         W_2d = self.W.view(self.cout,-1)
-        print(f"feature extractor shape: {W_2d.shape}")
+        # print(f"feature extractor shape: {W_2d.shape}")
         # Matmul between convolution and input patch
         conv = W_2d @ self.X_unf 
-        print(f"convolution shape: {conv.shape}")
+        # print(f"convolution shape: {conv.shape}")
         # adding bias if not none
         if self.b is not None:
             conv += self.b.view(1, -1, 1)
@@ -344,7 +345,7 @@ class Conv2D(Module):
         self.out_spatial = (H_out,W_out)
         # Reshaping
         conv_output = conv.view(N,self.cout,H_out,W_out)
-        print(f"convolution output shape: {conv_output.shape}")
+        # print(f"convolution output shape: {conv_output.shape}")
         
         return conv_output
         
@@ -446,7 +447,7 @@ class MaxPool2D(Module):
         N,C,H,W = self.shape
         
         self.X_unf = F.unfold(x, kernel_size=self.k, stride=self.stride)
-        print(f"unfolded local patch shape: {self.X_unf.shape}")
+        # print(f"unfolded local patch shape: {self.X_unf.shape}")
         
         patches = self.X_unf.view(N, C, self.k[0]*self.k[1], -1)
         self.max_val, self.max_idx = torch.max(patches, dim=2)
@@ -789,7 +790,7 @@ if __name__ == "__main__":
     print("Starting training...")
     train_losses, val_losses, train_accs, val_accs = train_model(
         net, criterion, X_train, y_train, X_val, y_val,
-        epochs=5, batch_size=128, lr=0.01
+        epochs=10, batch_size=128, lr=0.01
     )
     
     # Plot training curves

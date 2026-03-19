@@ -1,6 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=explore
 #SBATCH --nodes=1
+#SBATCH --account=csci_ga_3033_076-2026sp
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=00:05:00
 #SBATCH --mem=8G

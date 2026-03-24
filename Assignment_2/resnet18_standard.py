@@ -173,10 +173,10 @@ class ResNet(nn.Module):
             )
 
         layers = [block(self.in_channels, out_channels, stride , downsample)]
-        layers.append(block(self.in_channels, out_channels, stride, downsample))
+        
         self.in_channels = out_channels
         
-        for i in range(1, blocks):
+        for _ in range(1, blocks):
             layers.append(block(self.in_channels, out_channels))
 
         return nn.Sequential(*layers)
@@ -209,7 +209,7 @@ def top_k_acc(output: Tensor, target: Tensor, k: int) -> float:
     with torch.no_grad():
         batch_size = target.size(0)
         # idx of top k preds for each sample 
-        values, idx = output.topk(k,dim=1, largest=True, sorted=True)
+        values, pred = output.topk(k,dim=1, largest=True, sorted=True)
         pred = pred.t()
         correct = pred.eq(target.view(1, -1).expand_as(pred))
         correct_k = correct[:k].reshape(-1).float().sum(0)
@@ -245,7 +245,7 @@ def main():
     # Efficiency Technique 3: Early Stopping (ES)
     best_val_acc = 0.0
     patience = 5
-    p_count = 0
+    patience_count = 0
     n_epochs = 100
     
     # History
@@ -323,19 +323,6 @@ def main():
 
         # Step scheduler after each epoch
         scheduler.step()
-        
-        
-        for images,labels in train_loader:
-            optimizer.zero_grad()
-            output = model(images)
-            loss = criterion(output, labels)
-            loss.backward()
-            optimizer.step()
-            
-            total_loss += loss.item()
-            
-            
-            print(f'  epoch [{batch_idx}/{len(train_loader)}] Loss: {loss.item():.4f}')
     
         # Metrics History
         

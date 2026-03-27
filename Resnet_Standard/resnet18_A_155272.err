@@ -1,0 +1,5 @@
+/scratch/ap9283/CS_3033_Vision_Meets_ML/Assignment_2/resnet18_standard.py:239: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = torch.cuda.amp.GradScaler()
+/scratch/ap9283/CS_3033_Vision_Meets_ML/Assignment_2/resnet18_standard.py:280: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast():
+slurmstepd: error: *** JOB 155272 ON b-19-76 CANCELLED AT 2026-03-25T09:51:04 ***

@@ -1,0 +1,4 @@
+/scratch/ap9283/CS_3033_Vision_Meets_ML/Assignment_2/resnet18_globalnorm.py:260: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = torch.cuda.amp.GradScaler()
+/scratch/ap9283/CS_3033_Vision_Meets_ML/Assignment_2/resnet18_globalnorm.py:301: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast():

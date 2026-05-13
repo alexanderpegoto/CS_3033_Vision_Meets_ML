@@ -19,7 +19,8 @@ singularity exec --nv \
     conda activate cvenv
     python /scratch/ap9283/CS_3033_Vision_Meets_ML/Assignment_4/solution.py \
       --strategy transformer \
-      --epochs 25 \
+      --epochs 15 \
+      --warmup-epochs 10 \
       --batch-size 8 \
       --match-dir /scratch/ap9283/CS_3033_Vision_Meets_ML/Assignment_4/data/matched_annotations \
       --frames-root /frame_pair_data \

@@ -207,7 +207,7 @@ def cxcywh_to_xyxy(boxes, H, W):
 
 
 @torch.no_grad()
-def evaluate(model, loader, processor, device, score_thr=0.5, iou_thr=0.5):
+def evaluate(model, loader, processor, device, score_thr=0.3, iou_thr=0.5):
     model.eval()
     tp = fp = fn = 0
     for batch in loader:
@@ -307,19 +307,34 @@ def build_model(device):
     ).to(device)
 
 
-def run_strategy(strategy, train_dl, test_dl, processor, device, epochs, lr, save_dir):
-    print(f"\n=== strategy: {strategy}  (lr={lr})  ===")
+def run_strategy(strategy, train_dl, test_dl, processor, device,
+                 epochs, warmup_epochs, lr, warmup_lr, save_dir):
+    print(f"\n=== strategy: {strategy}  (warmup_lr={warmup_lr}, lr={lr})  ===")
     model = build_model(device)
+
+    # Phase 1: warm-up — train everything to get the 6-class head out of random init.
+    if warmup_epochs > 0:
+        print(f"\n-- warm-up: {warmup_epochs} epochs, all params trainable --")
+        for p in model.parameters():
+            p.requires_grad = True
+        optim = AdamW(model.parameters(), lr=warmup_lr)
+        for epoch in range(warmup_epochs):
+            print(f"warmup epoch {epoch + 1}/{warmup_epochs}")
+            loss = train_epoch(model, train_dl, optim, device)
+            m = evaluate(model, test_dl, processor, device)
+            print(f"  loss={loss:.4f}  P={m['precision']:.3f}  R={m['recall']:.3f}  F1={m['f1']:.3f}")
+
+    # Phase 2: strategy ablation — freeze per strategy, continue training the unfrozen block.
+    print(f"\n-- ablation: {epochs} epochs, unfreezing only {strategy} --")
     apply_freeze(model, strategy)
     tr, tot = count_trainable(model)
     print(f"trainable: {tr:,} / {tot:,}  ({100 * tr / tot:.2f}%)")
-
-    optimizer = AdamW([p for p in model.parameters() if p.requires_grad], lr=lr)
+    optim = AdamW([p for p in model.parameters() if p.requires_grad], lr=lr)
 
     history = {"loss": [], "precision": [], "recall": [], "f1": []}
     for epoch in range(epochs):
         print(f"epoch {epoch + 1}/{epochs}")
-        loss = train_epoch(model, train_dl, optimizer, device)
+        loss = train_epoch(model, train_dl, optim, device)
         m = evaluate(model, test_dl, processor, device)
         history["loss"].append(loss)
         history["precision"].append(m["precision"])
@@ -337,7 +352,9 @@ def run_strategy(strategy, train_dl, test_dl, processor, device, epochs, lr, sav
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--strategy", choices=["backbone", "heads", "transformer", "all"], default="all")
-    ap.add_argument("--epochs", type=int, default=10)
+    ap.add_argument("--epochs", type=int, default=15, help="strategy-ablation epochs (after warm-up)")
+    ap.add_argument("--warmup-epochs", type=int, default=10, help="full-model warm-up epochs")
+    ap.add_argument("--warmup-lr", type=float, default=1e-4)
     ap.add_argument("--batch-size", type=int, default=2)
     ap.add_argument("--lr", type=float, default=None, help="overrides per-strategy default")
     ap.add_argument("--match-dir",  default="data/matched_annotations")
@@ -367,7 +384,8 @@ def main():
     for s in strategies:
         lr = args.lr if args.lr else DEFAULT_LR[s]
         last_model, results[s] = run_strategy(
-            s, train_dl, test_dl, processor, device, args.epochs, lr, args.save_dir
+            s, train_dl, test_dl, processor, device,
+            args.epochs, args.warmup_epochs, lr, args.warmup_lr, args.save_dir,
         )
 
     # If only one strategy was run this time, fold in any prior runs' JSONs for the plot.

@@ -19,9 +19,9 @@ singularity exec --nv \
     conda activate cvenv
     python /scratch/ap9283/CS_3033_Vision_Meets_ML/Assignment_4/solution.py \
       --strategy heads \
-      --epochs 40 \
+      --epochs 25 \
       --batch-size 8 \
       --match-dir /scratch/ap9283/CS_3033_Vision_Meets_ML/Assignment_4/data/matched_annotations \
-      --frames-root /scratch/ap9283/CS_3033_Vision_Meets_ML/Assignment_3/data \
+      --frames-root /frame_pair_data \
       --save-dir /scratch/ap9283/CS_3033_Vision_Meets_ML/Assignment_4/checkpoints
   "

@@ -312,12 +312,18 @@ def run_strategy(strategy, train_dl, test_dl, processor, device,
     print(f"\n=== strategy: {strategy}  (warmup_lr={warmup_lr}, lr={lr})  ===")
     model = build_model(device)
 
-    # Phase 1: warm-up — train everything to get the 6-class head out of random init.
+    # Phase 1: warm-up — train everything, but with a smaller LR on the pretrained backbone
+    # so its COCO weights don't get blown out (standard DETR fine-tuning recipe).
     if warmup_epochs > 0:
         print(f"\n-- warm-up: {warmup_epochs} epochs, all params trainable --")
         for p in model.parameters():
             p.requires_grad = True
-        optim = AdamW(model.parameters(), lr=warmup_lr)
+        backbone_params = [p for n, p in model.named_parameters() if n.startswith("model.backbone.")]
+        other_params    = [p for n, p in model.named_parameters() if not n.startswith("model.backbone.")]
+        optim = AdamW(
+            [{"params": backbone_params, "lr": warmup_lr * 0.1},
+             {"params": other_params,    "lr": warmup_lr}]
+        )
         for epoch in range(warmup_epochs):
             print(f"warmup epoch {epoch + 1}/{warmup_epochs}")
             loss = train_epoch(model, train_dl, optim, device)

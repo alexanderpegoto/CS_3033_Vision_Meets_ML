@@ -1,0 +1,116 @@
+device: cuda
+train: 216  test: 55
+
+=== strategy: full  (warmup_lr=0.0001, lr=0.0001)  ===
+
+-- warm-up: 10 epochs, all params trainable --
+warmup epoch 1/10
+  batch 0/27  loss=3.6171
+  batch 20/27  loss=2.2005
+  loss=2.6926  P=0.000  R=0.000  F1=0.000
+warmup epoch 2/10
+  batch 0/27  loss=2.2232
+  batch 20/27  loss=1.9876
+  loss=1.9774  P=0.000  R=0.000  F1=0.000
+warmup epoch 3/10
+  batch 0/27  loss=1.9323
+  batch 20/27  loss=1.5495
+  loss=1.8982  P=0.000  R=0.000  F1=0.000
+warmup epoch 4/10
+  batch 0/27  loss=1.9880
+  batch 20/27  loss=1.9028
+  loss=2.1760  P=0.000  R=0.000  F1=0.000
+warmup epoch 5/10
+  batch 0/27  loss=2.3202
+  batch 20/27  loss=2.2459
+  loss=2.4171  P=0.000  R=0.000  F1=0.000
+warmup epoch 6/10
+  batch 0/27  loss=1.5388
+  batch 20/27  loss=1.3914
+  loss=1.8061  P=0.000  R=0.000  F1=0.000
+warmup epoch 7/10
+  batch 0/27  loss=1.5784
+  batch 20/27  loss=1.9079
+  loss=1.5820  P=0.000  R=0.000  F1=0.000
+warmup epoch 8/10
+  batch 0/27  loss=1.3467
+  batch 20/27  loss=1.3256
+  loss=1.5823  P=0.000  R=0.000  F1=0.000
+warmup epoch 9/10
+  batch 0/27  loss=1.5918
+  batch 20/27  loss=1.6521
+  loss=1.5398  P=0.077  R=0.010  F1=0.017
+warmup epoch 10/10
+  batch 0/27  loss=1.5581
+  batch 20/27  loss=1.5148
+  loss=1.6175  P=0.054  R=0.059  F1=0.056
+
+-- ablation: 15 epochs, unfreezing only full --
+trainable: 41,502,923 / 41,502,923  (100.00%)
+epoch 1/15
+  batch 0/27  loss=1.8858
+  batch 20/27  loss=1.7701
+  loss=1.5189  P=0.068  R=0.029  F1=0.041
+epoch 2/15
+  batch 0/27  loss=1.5571
+  batch 20/27  loss=1.2735
+  loss=1.4759  P=0.063  R=0.157  F1=0.090
+epoch 3/15
+  batch 0/27  loss=1.2682
+  batch 20/27  loss=1.2909
+  loss=1.4226  P=0.051  R=0.157  F1=0.077
+epoch 4/15
+  batch 0/27  loss=1.9499
+  batch 20/27  loss=1.2367
+  loss=1.4007  P=0.047  R=0.255  F1=0.079
+epoch 5/15
+  batch 0/27  loss=1.2820
+  batch 20/27  loss=1.1298
+  loss=1.3448  P=0.039  R=0.186  F1=0.064
+epoch 6/15
+  batch 0/27  loss=1.4190
+  batch 20/27  loss=1.4800
+  loss=1.4694  P=0.047  R=0.451  F1=0.086
+epoch 7/15
+  batch 0/27  loss=1.4099
+  batch 20/27  loss=1.5194
+  loss=1.4305  P=0.065  R=0.422  F1=0.113
+epoch 8/15
+  batch 0/27  loss=1.4474
+  batch 20/27  loss=1.4168
+  loss=1.4030  P=0.073  R=0.490  F1=0.127
+epoch 9/15
+  batch 0/27  loss=1.5566
+  batch 20/27  loss=1.4020
+  loss=1.3212  P=0.076  R=0.598  F1=0.135
+epoch 10/15
+  batch 0/27  loss=1.5919
+  batch 20/27  loss=1.3177
+  loss=1.3108  P=0.078  R=0.637  F1=0.139
+epoch 11/15
+  batch 0/27  loss=0.9752
+  batch 20/27  loss=1.2220
+  loss=1.3206  P=0.068  R=0.422  F1=0.117
+epoch 12/15
+  batch 0/27  loss=1.5552
+  batch 20/27  loss=1.6820
+  loss=1.5199  P=0.059  R=0.500  F1=0.106
+epoch 13/15
+  batch 0/27  loss=1.6377
+  batch 20/27  loss=1.5317
+  loss=1.6352  P=0.073  R=0.402  F1=0.124
+epoch 14/15
+  batch 0/27  loss=1.6276
+  batch 20/27  loss=1.6578
+  loss=1.5560  P=0.061  R=0.529  F1=0.109
+epoch 15/15
+  batch 0/27  loss=1.1258
+  batch 20/27  loss=1.7145
+  loss=1.6031  P=0.044  R=0.353  F1=0.079
+
+final metrics:
+  strategy           P       R      F1
+  full           0.044   0.353   0.079
+  backbone       0.046   0.245   0.078
+  heads          0.063   0.225   0.098
+  transformer    0.061   0.353   0.103

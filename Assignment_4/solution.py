@@ -28,8 +28,9 @@ STRATEGIES = {
     "backbone":    ("model.backbone.",),
     "heads":       ("class_labels_classifier.", "bbox_predictor."),
     "transformer": ("model.encoder.", "model.decoder.", "model.query_position_embeddings"),
+    "full":        ("",),   # empty prefix matches every param — no freezing
 }
-DEFAULT_LR = {"backbone": 1e-5, "heads": 1e-4, "transformer": 1e-4}
+DEFAULT_LR = {"backbone": 1e-5, "heads": 1e-4, "transformer": 1e-4, "full": 1e-4}
 
 
 ##### PREPROCESSING #########
@@ -335,7 +336,17 @@ def run_strategy(strategy, train_dl, test_dl, processor, device,
     apply_freeze(model, strategy)
     tr, tot = count_trainable(model)
     print(f"trainable: {tr:,} / {tot:,}  ({100 * tr / tot:.2f}%)")
-    optim = AdamW([p for p in model.parameters() if p.requires_grad], lr=lr)
+
+    if strategy == "full":
+        # Discriminative LR so the pretrained backbone is not blown out.
+        backbone_params = [p for n, p in model.named_parameters() if n.startswith("model.backbone.")]
+        other_params    = [p for n, p in model.named_parameters() if not n.startswith("model.backbone.")]
+        optim = AdamW(
+            [{"params": backbone_params, "lr": lr * 0.1},
+             {"params": other_params,    "lr": lr}]
+        )
+    else:
+        optim = AdamW([p for p in model.parameters() if p.requires_grad], lr=lr)
 
     history = {"loss": [], "precision": [], "recall": [], "f1": []}
     for epoch in range(epochs):
@@ -357,7 +368,7 @@ def run_strategy(strategy, train_dl, test_dl, processor, device,
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--strategy", choices=["backbone", "heads", "transformer", "all"], default="all")
+    ap.add_argument("--strategy", choices=["backbone", "heads", "transformer", "full", "all"], default="all")
     ap.add_argument("--epochs", type=int, default=15, help="strategy-ablation epochs (after warm-up)")
     ap.add_argument("--warmup-epochs", type=int, default=10, help="full-model warm-up epochs")
     ap.add_argument("--warmup-lr", type=float, default=1e-4)
@@ -383,7 +394,7 @@ def main():
     train_dl = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True,  collate_fn=collate)
     test_dl  = DataLoader(test_ds,  batch_size=args.batch_size, shuffle=False, collate_fn=collate)
 
-    strategies = ["backbone", "heads", "transformer"] if args.strategy == "all" else [args.strategy]
+    strategies = ["backbone", "heads", "transformer", "full"] if args.strategy == "all" else [args.strategy]
 
     results = {}
     last_model = None
@@ -395,7 +406,7 @@ def main():
         )
 
     # If only one strategy was run this time, fold in any prior runs' JSONs for the plot.
-    for s in ["backbone", "heads", "transformer"]:
+    for s in ["backbone", "heads", "transformer", "full"]:
         if s in results:
             continue
         path = os.path.join(args.save_dir, f"{s}.json")
